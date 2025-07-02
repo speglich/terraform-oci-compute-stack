@@ -1,27 +1,23 @@
-variable "setup_docker" {
-    description = "Whether to set up Docker on the instance"
-    default     = true
-    type        = bool
+variable "shapes" {
+  description = "List of shapes to use for the instances"
+  type = map(object({
+    shape_config = object({
+      shape                   = string
+      instance_count          = optional(number, 1)
+      ocpus                   = optional(number)
+      memory_in_gbs           = optional(number)
+      boot_volume_size_in_gbs = number
+      image_id                = string
+      ssh_user                = string
+      setup_docker            = optional(bool, true)
+      setup_nvidia_docker     = optional(bool, false)
+      setup_oci_growfs        = optional(bool, true)
+    })
+    public_ip = string
+  }))
 }
-variable "setup_nvidia_container_toolkit" {
-    description = "Whether to set up NVIDIA container toolkit on the instance"
-    default     = true
-    type        = bool
-}
-variable "instance_public_ip" {
-    description = "Public IP address of the instance"
-    type        = list(string)
-}
-variable "ssh_user" {
-    description = "SSH user for accessing the instance"
-    default     = "opc"
-    type        = string
-}
+
 variable "ssh_private_key" {
     description = "SSH private key for accessing the instance"
     type        = string
-}
-variable "replicas" {
-  type    = number
-  default = 1
 }

@@ -16,13 +16,11 @@ module "compute" {
   shapes              = var.shapes
 }
 
-# module "tools" {
-#   source              = "./modules/tools"
-#   instance_public_ip  = module.compute.public_instance_ip
-#   ssh_user            = var.ssh_user
-#   ssh_private_key     = module.compute.ssh_private_key
-#   replicas            = var.replicas
-# }
+module "tools" {
+  source              = "./modules/tools"
+  ssh_private_key     = module.compute.ssh_private_key
+  shapes              = module.compute.instances
+}
 
 data "oci_identity_availability_domains" "ads" {
   compartment_id = var.compartment_ocid

@@ -1,4 +1,13 @@
 resource "null_resource" "oci_grow_fs" {
+  for_each = {
+    for name, shape in var.shapes :
+    name => {
+      public_ip = shape.public_ip
+      ssh_user  = shape.shape_config.ssh_user
+    }
+    if try(shape.shape_config.setup_oci_growfs, true)
+  }
+
   provisioner "remote-exec" {
     inline = [
       "sudo /usr/libexec/oci-growfs -y"
@@ -6,16 +15,23 @@ resource "null_resource" "oci_grow_fs" {
 
     connection {
       type        = "ssh"
-      user        = var.ssh_user
+      user        = each.value.ssh_user
       private_key = file(var.ssh_private_key)
-      host        = var.instance_public_ip[count.index]
+      host        = each.value.public_ip
       timeout     = "600m"
     }
   }
 }
 
 resource "null_resource" "docker_install" {
-  count = var.replicas
+  for_each = {
+    for name, shape in var.shapes :
+    name => {
+      public_ip = shape.public_ip
+      ssh_user  = shape.shape_config.ssh_user
+    }
+    if try(shape.shape_config.setup_docker, true) || try(shape.shape_config.setup_nvidia_docker, false)
+  }
 
   provisioner "remote-exec" {
     inline = [
@@ -29,16 +45,24 @@ resource "null_resource" "docker_install" {
 
     connection {
       type        = "ssh"
-      user        = var.ssh_user
+      user        = each.value.ssh_user
       private_key = file(var.ssh_private_key)
-      host        = var.instance_public_ip[count.index]
+      host        = each.value.public_ip
       timeout     = "600m"
     }
   }
 }
 
 resource "null_resource" "nvidia_container_toolkit_install" {
-  count = var.replicas
+  for_each = {
+    for name, shape in var.shapes :
+    name => {
+      public_ip = shape.public_ip
+      ssh_user  = shape.shape_config.ssh_user
+    }
+    if try(shape.shape_config.setup_nvidia_docker, false)
+  }
+
   depends_on = [ null_resource.docker_install ]
 
   provisioner "remote-exec" {
@@ -52,9 +76,9 @@ resource "null_resource" "nvidia_container_toolkit_install" {
 
     connection {
       type        = "ssh"
-      user        = var.ssh_user
+      user        = each.value.ssh_user
       private_key = file(var.ssh_private_key)
-      host        = var.instance_public_ip[count.index]
+      host        = each.value.public_ip
       timeout     = "600m"
     }
   }
