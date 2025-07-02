@@ -44,7 +44,7 @@ variable "shapes" {
     "gpu-node" = {
       shape                   = "VM.GPU.A10.1"
       instance_count          = 1
-      boot_volume_size_in_gbs = 50
+      boot_volume_size_in_gbs = 150
       image_id                = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaauewtoydpxzbdp26dcpuqzp5cdgqadbcpb7a45zgt4vvfg2ztuaaq"
       ssh_user                = "opc"
       setup_docker            = true
