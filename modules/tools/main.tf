@@ -103,6 +103,7 @@ resource "null_resource" "create_raid0" {
       user        = each.value.ssh_user
       private_key = file(var.ssh_private_key)
       host        = each.value.public_ip
+      timeout     = "600m"
     }
   }
 
@@ -117,6 +118,7 @@ resource "null_resource" "create_raid0" {
       user        = each.value.ssh_user
       private_key = file(var.ssh_private_key)
       host        = each.value.public_ip
+      timeout     = "600m"
     }
   }
 }
