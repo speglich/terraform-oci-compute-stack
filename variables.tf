@@ -31,21 +31,9 @@ variable "shapes" {
     setup_local_storage     = optional(bool, false)
   }))
   default = {
-    "dense-io" = {
-      shape                   = "BM.DenseIO2.52"
-      public_ip               = true
-      instance_count          = 1
-      boot_volume_size_in_gbs = 50
-      image_id                = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaanvwztmp6itiny5bbua4fdbnfocpkro77r45nymjo7ooqs3oi7f5q"
-      ssh_user                = "opc"
-      setup_docker            = false
-      setup_nvidia_docker     = false
-      setup_oci_growfs        = false
-      setup_local_storage     = true
-    }
     "cpu-node-public" = {
       shape                   = "VM.Standard.E5.Flex"
-      instance_count          = 0
+      instance_count          = 1
       ocpus                   = 1
       memory_in_gbs           = 8
       boot_volume_size_in_gbs = 50
@@ -58,7 +46,7 @@ variable "shapes" {
     "cpu-node-private" = {
       shape                   = "VM.Standard.E5.Flex"
       public_ip               = false
-      instance_count          = 0
+      instance_count          = 1
       ocpus                   = 1
       memory_in_gbs           = 8
       boot_volume_size_in_gbs = 50
@@ -70,7 +58,7 @@ variable "shapes" {
     }
     "gpu-node" = {
       shape                   = "VM.GPU.A10.1"
-      instance_count          = 0
+      instance_count          = 1
       boot_volume_size_in_gbs = 150
       image_id                = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaauewtoydpxzbdp26dcpuqzp5cdgqadbcpb7a45zgt4vvfg2ztuaaq"
       ssh_user                = "opc"
