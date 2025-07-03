@@ -47,6 +47,7 @@ The stack creates:
 - **Docker**: ✅ Installed
 - **NVIDIA Docker**: ❌
 - **OCI Growfs**: ✅ Enabled
+- **Local Storage**: ❌ Not available
 - **OS**: Oracle Linux
 
 #### CPU Node Private (VM.Standard.E5.Flex)
@@ -57,6 +58,7 @@ The stack creates:
 - **Docker**: ❌ Not installed
 - **NVIDIA Docker**: ❌
 - **OCI Growfs**: ✅ Enabled
+- **Local Storage**: ❌ Not available
 - **OS**: Oracle Linux
 
 #### GPU Node (VM.GPU.A10.1)
@@ -66,6 +68,7 @@ The stack creates:
 - **Docker**: ✅ Installed
 - **NVIDIA Docker**: ✅ Installed
 - **OCI Growfs**: ✅ Enabled
+- **Local Storage**: ❌ Not available
 - **OS**: Oracle Linux
 
 ### Automatic Features
@@ -73,10 +76,17 @@ The stack creates:
 - **Docker installation** (public instances)
 - **NVIDIA Docker configuration** (GPU instances)
 - **OCI Growfs** for automatic disk expansion
+- **Local Storage setup** (when enabled)
 
 ### Network Configuration
 - **Public Instances**: Direct internet access with public IP
 - **Private Instances**: Internal network only, no public IP
+
+### Local Storage Configuration
+- **NVMe Local Storage**: High-performance local storage for instances that support it
+- **Automatic Setup**: When enabled, configures and mounts local NVMe drives
+- **Performance**: Provides faster I/O for applications requiring high-performance storage
+- **Temporary Storage**: Local storage is ephemeral and lost when instance is terminated
 
 ## Prerequisites
 
@@ -129,6 +139,7 @@ shapes = {
     boot_volume_size_in_gbs = 100
     public_ip               = true
     setup_docker            = true
+    setup_local_storage     = true
     # ... other configurations
   }
   "cpu-node-private" = {
@@ -139,6 +150,7 @@ shapes = {
     boot_volume_size_in_gbs = 50
     public_ip               = false
     setup_docker            = false
+    setup_local_storage     = false
     # ... other configurations
   }
   "gpu-node" = {
@@ -147,6 +159,7 @@ shapes = {
     boot_volume_size_in_gbs = 200
     setup_docker            = true
     setup_nvidia_docker     = true
+    setup_local_storage     = true
     # ... other configurations
   }
 }
@@ -254,6 +267,7 @@ Each shape can be configured with:
 - `setup_docker`: Install Docker (default: true)
 - `setup_nvidia_docker`: Install NVIDIA Docker (default: false)
 - `setup_oci_growfs`: Expand file system (default: true)
+- `setup_local_storage`: Configure local NVMe storage (default: false)
 
 ## Outputs
 
