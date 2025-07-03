@@ -13,6 +13,7 @@ variable "shapes" {
       setup_docker            = optional(bool, true)
       setup_nvidia_docker     = optional(bool, false)
       setup_oci_growfs        = optional(bool, true)
+      setup_local_storage     = optional(bool, false)
     })
     public_ip = string
     private_ip = optional(string, null)

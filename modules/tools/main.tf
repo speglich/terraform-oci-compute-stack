@@ -83,3 +83,40 @@ resource "null_resource" "nvidia_container_toolkit_install" {
     }
   }
 }
+
+resource "null_resource" "create_raid0" {
+  for_each = {
+    for name, shape in var.shapes :
+    name => {
+      public_ip = shape.public_ip
+      ssh_user  = shape.shape_config.ssh_user
+    }
+    if try(shape.shape_config.setup_local_storage, false)
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/scripts/create_raid0.sh"
+    destination = "/tmp/create_raid0.sh"
+
+    connection {
+      type        = "ssh"
+      user        = each.value.ssh_user
+      private_key = file(var.ssh_private_key)
+      host        = each.value.public_ip
+    }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/create_raid0.sh",
+      "sudo /tmp/create_raid0.sh"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = each.value.ssh_user
+      private_key = file(var.ssh_private_key)
+      host        = each.value.public_ip
+    }
+  }
+}
