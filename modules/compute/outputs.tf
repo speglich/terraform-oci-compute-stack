@@ -8,6 +8,7 @@ output "instances" {
     name => {
       shape_config = local.instances_expanded[name]
       public_ip    = instance.public_ip
+      private_ip   = instance.private_ip
     }
   }
 }

@@ -3,6 +3,7 @@ variable "shapes" {
   type = map(object({
     shape_config = object({
       shape                   = string
+      public_ip               = optional(bool, true)
       instance_count          = optional(number, 1)
       ocpus                   = optional(number)
       memory_in_gbs           = optional(number)
@@ -14,6 +15,7 @@ variable "shapes" {
       setup_oci_growfs        = optional(bool, true)
     })
     public_ip = string
+    private_ip = optional(string, null)
   }))
 }
 

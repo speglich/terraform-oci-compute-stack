@@ -13,6 +13,7 @@ module "compute" {
   compartment_ocid    = var.compartment_ocid
   availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
   public_subnet_id    = module.network.public_subnet_id
+  private_subnet_id   = module.network.private_subnet_id
   shapes              = var.shapes
 }
 

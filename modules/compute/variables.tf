@@ -13,10 +13,16 @@ variable "public_subnet_id" {
     type        = string
 }
 
+variable "private_subnet_id" {
+    description = "OCID of the private subnet"
+    type        = string
+}
+
 variable "shapes" {
   description = "List of shapes to use for the instances"
   type = map(object({
     shape                   = string
+    public_ip               = optional(bool, true)
     instance_count          = optional(number, 1)
     ocpus                   = optional(number)
     memory_in_gbs           = optional(number)

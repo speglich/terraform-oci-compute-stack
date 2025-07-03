@@ -18,6 +18,7 @@ variable "shapes" {
   description = "List of shapes to use for the instances"
   type = map(object({
     shape                   = string
+    public_ip               = optional(bool, true)
     instance_count          = optional(number, 1)
     ocpus                   = optional(number)
     memory_in_gbs           = optional(number)
@@ -29,7 +30,7 @@ variable "shapes" {
     setup_oci_growfs        = optional(bool, true)
   }))
   default = {
-    "cpu-node" = {
+    "cpu-node-public" = {
       shape                   = "VM.Standard.E5.Flex"
       instance_count          = 1
       ocpus                   = 1
@@ -38,6 +39,19 @@ variable "shapes" {
       image_id                = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaanvwztmp6itiny5bbua4fdbnfocpkro77r45nymjo7ooqs3oi7f5q"
       ssh_user                = "opc"
       setup_docker            = true
+      setup_nvidia_docker     = false
+      setup_oci_growfs        = true
+    },
+    "cpu-node-private" = {
+      shape                   = "VM.Standard.E5.Flex"
+      public_ip               = false
+      instance_count          = 1
+      ocpus                   = 1
+      memory_in_gbs           = 8
+      boot_volume_size_in_gbs = 50
+      image_id                = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaanvwztmp6itiny5bbua4fdbnfocpkro77r45nymjo7ooqs3oi7f5q"
+      ssh_user                = "opc"
+      setup_docker            = false
       setup_nvidia_docker     = false
       setup_oci_growfs        = true
     }

@@ -51,8 +51,8 @@ resource "oci_core_instance" "instances" {
   }
 
   create_vnic_details {
-    subnet_id        = var.public_subnet_id
-    assign_public_ip = true
+    subnet_id        = each.value.public_ip ? var.public_subnet_id : var.private_subnet_id
+    assign_public_ip = each.value.public_ip
   }
 
   metadata = {
