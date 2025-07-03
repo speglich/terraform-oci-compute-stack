@@ -15,19 +15,21 @@ The stack creates:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                          VCN                               │
+│                          VCN                                │
 │  ┌─────────────────────┐    ┌─────────────────────────────┐ │
 │  │   Public Subnet     │    │     Private Subnet          │ │
 │  │   10.0.1.0/24       │    │     10.0.2.0/24             │ │
 │  │                     │    │                             │ │
-│  │  ┌───────────────┐  │    │                             │ │
-│  │  │  CPU Node     │  │    │                             │ │
-│  │  │  VM.E5.Flex   │  │    │                             │ │
-│  │  └───────────────┘  │    │                             │ │
+│  │  ┌───────────────┐  │    │  ┌───────────────────────┐  │ │
+│  │  │  CPU Node     │  │    │  │  CPU Node Private     │  │ │
+│  │  │  VM.E5.Flex   │  │    │  │  VM.E5.Flex           │  │ │
+│  │  │  (Public IP)  │  │    │  │  (Private IP only)    │  │ │
+│  │  └───────────────┘  │    │  └───────────────────────┘  │ │
 │  │                     │    │                             │ │
 │  │  ┌───────────────┐  │    │                             │ │
 │  │  │  GPU Node     │  │    │                             │ │
 │  │  │  VM.GPU.A10.1 │  │    │                             │ │
+│  │  │  (Public IP)  │  │    │                             │ │
 │  │  └───────────────┘  │    │                             │ │
 │  └─────────────────────┘    └─────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
@@ -37,25 +39,44 @@ The stack creates:
 
 ### Pre-configured Instances
 
-#### CPU Node (VM.Standard.E5.Flex)
+#### CPU Node Public (VM.Standard.E5.Flex)
 - **vCPUs**: 1
 - **Memory**: 8 GB
 - **Boot Volume**: 50 GB
+- **Network**: Public subnet with public IP
 - **Docker**: ✅ Installed
 - **NVIDIA Docker**: ❌
+- **OCI Growfs**: ✅ Enabled
+- **OS**: Oracle Linux
+
+#### CPU Node Private (VM.Standard.E5.Flex)
+- **vCPUs**: 1
+- **Memory**: 8 GB
+- **Boot Volume**: 50 GB
+- **Network**: Private subnet (no public IP)
+- **Docker**: ❌ Not installed
+- **NVIDIA Docker**: ❌
+- **OCI Growfs**: ✅ Enabled
 - **OS**: Oracle Linux
 
 #### GPU Node (VM.GPU.A10.1)
 - **GPU**: NVIDIA A10
 - **Boot Volume**: 150 GB
+- **Network**: Public subnet with public IP
 - **Docker**: ✅ Installed
 - **NVIDIA Docker**: ✅ Installed
+- **OCI Growfs**: ✅ Enabled
 - **OS**: Oracle Linux
 
 ### Automatic Features
 - **Automatic SSH key generation**
-- **Docker installation**
-- **NVIDIA Docker configuration (GPUs)**
+- **Docker installation** (public instances)
+- **NVIDIA Docker configuration** (GPU instances)
+- **OCI Growfs** for automatic disk expansion
+
+### Network Configuration
+- **Public Instances**: Direct internet access with public IP
+- **Private Instances**: Internal network only, no public IP
 
 ## Prerequisites
 
@@ -100,12 +121,32 @@ Modify configurations in `variables.tf`:
 
 ```hcl
 shapes = {
-  "my-cpu-server" = {
+  "cpu-node-public" = {
     shape                   = "VM.Standard.E5.Flex"
     instance_count          = 2
     ocpus                   = 2
     memory_in_gbs           = 16
     boot_volume_size_in_gbs = 100
+    public_ip               = true
+    setup_docker            = true
+    # ... other configurations
+  }
+  "cpu-node-private" = {
+    shape                   = "VM.Standard.E5.Flex"
+    instance_count          = 1
+    ocpus                   = 1
+    memory_in_gbs           = 8
+    boot_volume_size_in_gbs = 50
+    public_ip               = false
+    setup_docker            = false
+    # ... other configurations
+  }
+  "gpu-node" = {
+    shape                   = "VM.GPU.A10.1"
+    instance_count          = 1
+    boot_volume_size_in_gbs = 200
+    setup_docker            = true
+    setup_nvidia_docker     = true
     # ... other configurations
   }
 }
@@ -143,8 +184,10 @@ ssh -i keys/oci_instance_key.pem opc@<PUBLIC_IP>
 # View created resources
 terraform state list
 
-# View resource details
-terraform state show module.compute.oci_core_instance.instances["cpu-node-0"]
+# View specific resource details
+terraform state show module.compute.oci_core_instance.instances["cpu-node-public-0"]
+terraform state show module.compute.oci_core_instance.instances["cpu-node-private-0"]
+terraform state show module.compute.oci_core_instance.instances["gpu-node-0"]
 ```
 
 #### Modify Infrastructure
@@ -158,8 +201,11 @@ terraform destroy -target=module.compute.oci_core_instance.instances["gpu-node-0
 
 #### SSH Access
 ```bash
-# CPU Node
-ssh -i keys/oci_instance_key.pem opc@<CPU_NODE_IP>
+# CPU Node Public
+ssh -i keys/oci_instance_key.pem opc@<CPU_NODE_PUBLIC_IP>
+
+# CPU Node Private (via bastion or VPN)
+ssh -i keys/oci_instance_key.pem opc@<CPU_NODE_PRIVATE_IP>
 
 # GPU Node
 ssh -i keys/oci_instance_key.pem opc@<GPU_NODE_IP>
@@ -197,16 +243,17 @@ ssh -i keys/oci_instance_key.pem opc@<GPU_NODE_IP>
 ### Shape Configurations
 
 Each shape can be configured with:
-- `shape`: Instance type (e.g., VM.Standard.E5.Flex)
+- `shape`: Instance type (e.g., VM.Standard.E5.Flex, VM.GPU.A10.1)
 - `instance_count`: Number of instances
+- `public_ip`: Whether to assign public IP (default: true)
 - `ocpus`: Number of vCPUs (flex shapes only)
-- `memory_in_gbs`: Memory in GB
+- `memory_in_gbs`: Memory in GB (flex shapes only)
 - `boot_volume_size_in_gbs`: Boot disk size
 - `image_id`: Oracle Linux image OCID
 - `ssh_user`: SSH user (default: opc)
-- `setup_docker`: Install Docker
-- `setup_nvidia_docker`: Install NVIDIA Docker
-- `setup_oci_growfs`: Expand file system
+- `setup_docker`: Install Docker (default: true)
+- `setup_nvidia_docker`: Install NVIDIA Docker (default: false)
+- `setup_oci_growfs`: Expand file system (default: true)
 
 ## Outputs
 
