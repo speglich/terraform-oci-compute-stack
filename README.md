@@ -108,7 +108,7 @@ oci iam user get --user-id <your-user-ocid>
 
 ### 1. Clone the Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/speglich/terraform-oci-compute-stack.git
 cd terraform-oci-compute-stack
 ```
 
