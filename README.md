@@ -251,6 +251,7 @@ ssh -i keys/oci_instance_key.pem opc@<GPU_NODE_IP>
 | `compartment_ocid` | OCI compartment OCID | string | - | ✅ |
 | `profile` | OCI CLI profile | string | "DEFAULT" | ❌ |
 | `region` | OCI region | string | "sa-saopaulo-1" | ❌ |
+| `ingress_security_rules` | List of ingress security rules for public subnet | list(object) | SSH (port 22) from 0.0.0.0/0 | ❌ |
 | `shapes` | Instance configurations | map(object) | See file | ❌ |
 
 ### Shape Configurations
@@ -268,6 +269,51 @@ Each shape can be configured with:
 - `setup_nvidia_docker`: Install NVIDIA Docker (default: false)
 - `setup_oci_growfs`: Expand file system (default: true)
 - `setup_local_storage`: Configure local NVMe storage (default: false)
+
+### Security Rules Configuration
+
+The `ingress_security_rules` variable allows you to configure network security for the public subnet. Each rule can include:
+- `protocol`: Protocol number (e.g., "6" for TCP, "17" for UDP, "1" for ICMP)
+- `source`: Source CIDR block or security group
+- `source_type`: Type of source ("CIDR_BLOCK" or "SERVICE_CIDR_BLOCK")
+- `tcp_options`: TCP port range (optional, for TCP protocol)
+- `udp_options`: UDP port range (optional, for UDP protocol)
+- `icmp_options`: ICMP type and code (optional, for ICMP protocol)
+
+**Default configuration**: SSH access (port 22) from anywhere (0.0.0.0/0)
+
+**Example custom configuration**:
+```hcl
+ingress_security_rules = [
+  {
+    protocol    = "6" # TCP
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    tcp_options = {
+      min = 22
+      max = 22
+    }
+  },
+  {
+    protocol    = "6" # TCP
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    tcp_options = {
+      min = 80
+      max = 80
+    }
+  },
+  {
+    protocol    = "6" # TCP
+    source      = "0.0.0.0/0"
+    source_type = "CIDR_BLOCK"
+    tcp_options = {
+      min = 443
+      max = 443
+    }
+  }
+]
+```
 
 ## Outputs
 
