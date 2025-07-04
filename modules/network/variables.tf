@@ -18,9 +18,16 @@ variable "private_subnet_cidr" {
   type        = string
 }
 
-variable "exposed_ports" {
-  description = "List of ports to expose"
-  type        = list(number)
+variable "ingress_security_rules" {
+  description = "Ingress security rules for the public subnet"
+  type = list(object({
+    protocol        = string
+    source          = string
+    source_type     = string
+    tcp_options     = optional(object({ min = number, max = number }))
+    udp_options     = optional(object({ min = number, max = number }))
+    icmp_options    = optional(object({ type = number, code = number }))
+  }))
 }
 
 variable "network_name" {

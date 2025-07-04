@@ -5,7 +5,7 @@ module "network" {
   public_subnet_cidr  = "10.0.1.0/24"
   private_subnet_cidr = "10.0.2.0/24"
   network_name        = local.environment_name
-  exposed_ports       = [22]
+  ingress_security_rules = var.ingress_security_rules
 }
 
 module "compute" {

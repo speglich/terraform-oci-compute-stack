@@ -60,15 +60,29 @@ resource "oci_core_security_list" "public_sl" {
   display_name   = "${var.network_name}-public-sl"
 
   dynamic "ingress_security_rules" {
-    for_each = var.exposed_ports
-    content {
-      protocol = "6" # TCP
-      source   = "0.0.0.0/0"
-      source_type = "CIDR_BLOCK"
+    for_each = var.ingress_security_rules
 
-      tcp_options {
-        min = ingress_security_rules.value
-        max = ingress_security_rules.value
+    content {
+      protocol = ingress_security_rules.value.protocol
+      source   = ingress_security_rules.value.source
+      source_type = ingress_security_rules.value.source_type
+
+      dynamic "tcp_options" {
+        for_each = ingress_security_rules.value.tcp_options != null ? [ingress_security_rules.value.tcp_options] : []
+
+        content {
+          min = tcp_options.value.min
+          max = tcp_options.value.max
+        }
+      }
+
+      dynamic "udp_options" {
+        for_each = ingress_security_rules.value.udp_options != null ? [ingress_security_rules.value.udp_options] : []
+
+        content {
+          min = udp_options.value.min
+          max = udp_options.value.max
+        }
       }
     }
   }

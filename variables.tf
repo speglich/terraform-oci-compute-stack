@@ -14,6 +14,29 @@ variable "profile" {
   type        = string
 }
 
+variable "ingress_security_rules" {
+  description = "List of ingress security rules for the public subnet"
+  type = list(object({
+    protocol        = string
+    source          = string
+    source_type     = string
+    tcp_options     = optional(object({ min = number, max = number }))
+    udp_options     = optional(object({ min = number, max = number }))
+    icmp_options    = optional(object({ type = number, code = number }))
+  }))
+  default = [
+    {
+      protocol    = "6" # TCP
+      source      = "0.0.0.0/0"
+      source_type = "CIDR_BLOCK"
+      tcp_options = {
+        min = 22
+        max = 22
+      }
+    }
+  ]
+}
+
 variable "shapes" {
   description = "List of shapes to use for the instances"
   type = map(object({
